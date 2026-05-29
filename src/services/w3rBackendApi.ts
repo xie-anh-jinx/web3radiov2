@@ -1,6 +1,6 @@
 
-// Backend API service for W3R rewards - Updated to use Supabase Edge Functions
-import { supabase } from "@/integrations/supabase/client";
+// Backend API service for W3R rewards - Migrated to Express API + PostgreSQL
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export interface ListeningSession {
   userAddress: string;
@@ -33,26 +33,16 @@ export class W3RBackendApi {
     try {
       console.log('Submitting listening session:', session);
 
-      if (!supabase) {
-        console.warn('W3R API: Supabase not initialized, skipping session submission.');
-        return { success: false, verifiedTime: 0 };
-      }
-
-      const { data, error } = await supabase.functions.invoke('w3r-api', {
-        body: {
-          ...session,
-          action: 'submit_session'
-        },
-        method: 'POST'
+      const response = await fetch(`${API_URL}/api/rewards/submit_session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(session)
       });
 
-      if (error) {
-        if (error.message?.includes('Failed to fetch') || error.name === 'FunctionsFetchError') {
-          console.warn('W3R API: Edge Function unreachable (likely CORS or Network issue).');
-        } else {
-          console.error('Error calling edge function:', error);
-        }
-        return { success: false, verifiedTime: 0 };
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to submit session');
       }
 
       console.log('Session submitted successfully:', data);
@@ -70,23 +60,11 @@ export class W3RBackendApi {
   // Get verified listening time for user
   async getVerifiedListeningTime(userAddress: string): Promise<number> {
     try {
-      if (!supabase) return 0;
+      const response = await fetch(`${API_URL}/api/rewards/listening_time/${userAddress}`);
+      const data = await response.json();
 
-      const { data, error } = await supabase.functions.invoke('w3r-api', {
-        body: {
-          action: 'get_listening_time',
-          userAddress
-        },
-        method: 'POST'
-      });
-
-      if (error) {
-        if (error.message?.includes('Failed to fetch') || error.name === 'FunctionsFetchError') {
-          console.warn('W3R API: Edge Function unreachable (likely CORS or Network issue).');
-        } else {
-          console.error('Error getting listening time:', error);
-        }
-        return 0;
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to get listening time');
       }
 
       return data?.totalListeningTime || 0;
@@ -99,23 +77,16 @@ export class W3RBackendApi {
   // Request reward claim signature
   async requestRewardSignature(userAddress: string): Promise<RewardClaim | null> {
     try {
-      if (!supabase) return null;
-
-      const { data, error } = await supabase.functions.invoke('w3r-api', {
-        body: {
-          action: 'claim_reward',
-          userAddress
-        },
-        method: 'POST'
+      const response = await fetch(`${API_URL}/api/rewards/claim_reward`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userAddress })
       });
 
-      if (error) {
-        if (error.message?.includes('Failed to fetch') || error.name === 'FunctionsFetchError') {
-          console.warn('W3R API: Edge Function unreachable (likely CORS or Network issue).');
-        } else {
-          console.error('Error requesting reward signature:', error);
-        }
-        return null;
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to request signature');
       }
 
       return data || null;
@@ -132,24 +103,11 @@ export class W3RBackendApi {
     availableRewards: number;
   }> {
     try {
-      if (!supabase) return { eligible: false, nextRewardIn: 0, availableRewards: 0 };
+      const response = await fetch(`${API_URL}/api/rewards/eligibility/${userAddress}`);
+      const data = await response.json();
 
-      const { data, error } = await supabase.functions.invoke('w3r-api', {
-        body: {
-          action: 'check_eligibility',
-          userAddress
-        },
-        method: 'POST'
-      });
-
-      if (error) {
-        // Handle CORS or network errors gracefully
-        if (error.message?.includes('Failed to fetch') || error.name === 'FunctionsFetchError') {
-          console.warn('W3R API: Edge Function unreachable (likely CORS or Network issue).');
-        } else {
-          console.error('Error checking reward eligibility:', error);
-        }
-        return { eligible: false, nextRewardIn: 0, availableRewards: 0 };
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to check eligibility');
       }
 
       return data || { eligible: false, nextRewardIn: 0, availableRewards: 0 };

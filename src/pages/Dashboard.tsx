@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Eye, Trash2, Plus, Edit, Wallet, Radio, Clock, AlertTriangle, Sparkles } from "lucide-react";
-import { fetchEvents, deleteEvent, fetchStations, deleteStation, subscribeToTable } from '@/lib/supabase';
+import { useAppKit, useAppKitAccount } from '@reown/appkit/react';
+import { Loader2, Eye, Trash2, Plus, Edit, Wallet, Clock, AlertTriangle, Sparkles, ShieldCheck, Newspaper, Briefcase, Calendar, MapPin } from "lucide-react";
+import { fetchEvents, deleteEvent, subscribeToTable } from '@/lib/api';
 import EventEditor from '@/components/cms/EventEditor';
-import StationEditor from '@/components/cms/StationEditor';
 import CMSSidebar from '@/components/cms/CMSSidebar';
-import MediaLibrary from '@/components/cms/MediaLibrary';
 import DashboardOverview from '@/components/cms/DashboardOverview';
-import RadioHub from '@/components/radio/RadioHub';
 import logo from '@/assets/web3radio-logo.png';
+
+const ALLOWED_ADDRESS = '9xhz4Cb4C2Z4z9xdD2geCafovNYVngC4E4XpWtQmeEuv';
+const truncate = (addr: string) => addr ? `${addr.slice(0, 6)}...${addr.slice(-6)}` : '';
 
 // Type definitions
 type Event = {
@@ -20,18 +21,10 @@ type Event = {
   description: string;
   image_url?: string;
   category?: 'news' | 'job' | 'event';
+  slug?: string;
   created_at?: string;
 };
 
-type Station = {
-  id: number;
-  name: string;
-  genre: string;
-  streaming: boolean;
-  description: string;
-  image_url?: string;
-  created_at?: string;
-};
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -39,35 +32,40 @@ const Dashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { open } = useAppKit();
+  const { address, isConnected } = useAppKitAccount();
 
   // Data states
   const [events, setEvents] = useState<Event[]>([]);
-  const [stations, setStations] = useState<Station[]>([]);
   const [loading, setLoading] = useState(true);
+  const [eventToEdit, setEventToEdit] = useState<Event | null>(null);
 
-  // Check authentication on mount
+  // Check authentication: wallet address must match whitelist
   useEffect(() => {
-    const auth = localStorage.getItem('cms_auth');
-    if (auth !== 'true') {
+    const saved = localStorage.getItem('solana_wallet_auth');
+    if (saved !== ALLOWED_ADDRESS) {
       navigate('/pintu_masuk');
-    } else {
-      setIsAuthenticated(true);
+      return;
     }
-  }, [navigate]);
+    // Also verify the currently-connected wallet still matches
+    if (isConnected && address && address !== ALLOWED_ADDRESS) {
+      localStorage.removeItem('solana_wallet_auth');
+      navigate('/pintu_masuk');
+      return;
+    }
+    setIsAuthenticated(true);
+  }, [navigate, isConnected, address]);
 
   // Load data when authenticated
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const loadData = async () => {
-      setLoading(true);
+    const loadData = async (isInitial = false) => {
+      if (isInitial) setLoading(true);
       try {
-        const [eventsRes, stationsRes] = await Promise.all([
-          fetchEvents(),
-          fetchStations()
-        ]);
-        setEvents(eventsRes.data || []);
-        setStations(stationsRes.data || []);
+        const { data, error } = await fetchEvents();
+        if (error) throw error;
+        setEvents(data || []);
       } catch (error) {
         console.error("Error loading dashboard data:", error);
         toast({
@@ -76,24 +74,22 @@ const Dashboard = () => {
           variant: "destructive",
         });
       } finally {
-        setLoading(false);
+        if (isInitial) setLoading(false);
       }
     };
 
-    loadData();
+    loadData(true);
 
-    // Setup subscriptions
-    const eventsSub = subscribeToTable('events', loadData);
-    const stationsSub = subscribeToTable('stations', loadData);
+    // Setup subscriptions - pass false to avoid loading screen on poll
+    const eventsSub = subscribeToTable('events', () => loadData(false));
 
     return () => {
       eventsSub.unsubscribe();
-      stationsSub.unsubscribe();
     };
   }, [isAuthenticated, toast]);
 
   const handleLogout = () => {
-    localStorage.removeItem('cms_auth');
+    localStorage.removeItem('solana_wallet_auth');
     navigate('/pintu_masuk');
     toast({
       title: "Logged Out",
@@ -103,39 +99,32 @@ const Dashboard = () => {
 
   const handleSaveComplete = () => {
     setShowEditor(false);
+    setEventToEdit(null);
+  };
+
+  const handleEditEvent = (event: Event) => {
+    setEventToEdit(event);
+    setShowEditor(true);
+  };
+
+  const handleCancelEdit = () => {
+    setShowEditor(false);
+    setEventToEdit(null);
   };
 
   const handleDeleteEvent = async (id: number) => {
-    if (window.confirm('Hapus event ini?')) {
+    if (window.confirm('Hapus artikel ini?')) {
       const { error } = await deleteEvent(id);
       if (error) {
         toast({
           title: "Error",
-          description: "Gagal menghapus event",
+          description: "Gagal menghapus artikel",
           variant: "destructive",
         });
       } else {
         toast({
           title: "Success",
-          description: "Event berhasil dihapus",
-        });
-      }
-    }
-  };
-
-  const handleDeleteStation = async (id: number) => {
-    if (window.confirm('Hapus station ini?')) {
-      const { error } = await deleteStation(id);
-      if (error) {
-        toast({
-          title: "Error",
-          description: "Gagal menghapus station",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Success",
-          description: "Station berhasil dihapus",
+          description: "Artikel berhasil dihapus",
         });
       }
     }
@@ -143,7 +132,7 @@ const Dashboard = () => {
 
   if (isAuthenticated === null || loading) {
     return (
-      <div className="min-h-screen w-full bg-transparent flex justify-center items-center text-white">
+      <div className="min-h-screen w-full bg-[#0a0a0a] flex justify-center items-center text-white">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin opacity-20" />
           <p className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-30">Loading Dashboard</p>
@@ -154,141 +143,134 @@ const Dashboard = () => {
 
   // Render content based on active tab
   const renderContent = () => {
-    switch (activeTab) {
-      case 'overview':
-        return (
-          <DashboardOverview
-            eventsCount={events.length}
-            stationsCount={stations.length}
-          />
-        );
-
-      case 'events':
-        return (
-          <div className="space-y-4 sm:space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-              <h2 className="text-xl sm:text-2xl font-bold text-white">Events Management</h2>
-              <button
-                onClick={() => setShowEditor(!showEditor)}
-                className="bg-[#515044] hover:bg-black text-white font-bold py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-[#515044]/10 uppercase text-[10px] tracking-widest w-full sm:w-auto"
-              >
-                <Plus className="h-4 w-4" />
-                {showEditor ? 'Hide Editor' : 'Add Event'}
-              </button>
-            </div>
-
-            {showEditor && <EventEditor onSave={handleSaveComplete} />}
-
-            <div className="bg-white/80 backdrop-blur-xl rounded-[32px] overflow-hidden border border-[#515044]/5 shadow-xl">
-              <div className="p-8 border-b border-[#515044]/5">
-                <h3 className="font-bold text-[#515044] text-lg">Upcoming Events</h3>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-[#515044]/30 mt-1">Manage your events</p>
-              </div>
-              <div className="divide-y divide-[#515044]/5">
-                {events.length > 0 ? (
-                  events.map((event) => (
-                    <div key={event.id} className="flex items-center gap-6 p-6 hover:bg-[#515044]/5 transition-colors">
-                      {event.image_url ? (
-                        <img src={event.image_url} alt={event.title} className="w-16 h-16 object-cover rounded-2xl shadow-md" />
-                      ) : (
-                        <div className="w-16 h-16 rounded-2xl bg-[#515044]/5 flex items-center justify-center">
-                          <Edit className="h-6 w-6 text-[#515044]/20" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-[#515044] truncate">{event.title}</p>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#515044]/30 mt-1">
-                          {event.date} • {event.location} • <span className="text-[#515044]/60">{event.category || 'event'}</span>
-                        </p>
-                      </div>
-                      <div className="flex gap-3">
-                        <button onClick={() => navigate(`/events`)} className="p-3 rounded-xl bg-white/50 hover:bg-white text-[#515044]/40 hover:text-[#515044] transition-all shadow-sm">
-                          <Eye className="h-4 w-4" />
-                        </button>
-                        <button onClick={() => handleDeleteEvent(event.id)} className="p-3 rounded-xl bg-red-500/5 hover:bg-red-500 text-red-500/40 hover:text-white transition-all shadow-sm">
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-12 text-center text-[#515044]/30 font-bold uppercase text-[10px] tracking-[0.2em]">No events found</div>
-                )}
-              </div>
-            </div>
-          </div>
-        );
-      case 'stations':
-        return (
-          <div className="space-y-4 sm:space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-              <h2 className="text-xl sm:text-2xl font-bold text-white">Radio Stations</h2>
-              <button
-                onClick={() => setShowEditor(!showEditor)}
-                className="bg-[#515044] hover:bg-black text-white font-bold py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-[#515044]/10 uppercase text-[10px] tracking-widest w-full sm:w-auto"
-              >
-                <Plus className="h-4 w-4" />
-                {showEditor ? 'Hide Editor' : 'Add Station'}
-              </button>
-            </div>
-
-            {showEditor && <StationEditor onSave={handleSaveComplete} />}
-
-            <div className="bg-white/80 backdrop-blur-xl rounded-[32px] overflow-hidden border border-[#515044]/5 shadow-xl">
-              <div className="p-8 border-b border-[#515044]/5">
-                <h3 className="font-bold text-[#515044] text-lg">Radio Stations</h3>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-[#515044]/30 mt-1">Manage your radio stations</p>
-              </div>
-              <div className="divide-y divide-[#515044]/5">
-                {stations.length > 0 ? (
-                  stations.map((station) => (
-                    <div key={station.id} className="flex items-center gap-6 p-6 hover:bg-[#515044]/5 transition-colors">
-                      {station.image_url ? (
-                        <img src={station.image_url} alt={station.name} className="w-16 h-16 object-cover rounded-2xl shadow-md" />
-                      ) : (
-                        <div className="w-16 h-16 rounded-2xl bg-[#515044]/5 flex items-center justify-center">
-                          <Radio className="h-6 w-6 text-[#515044]/20" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-[#515044] truncate">{station.name}</p>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#515044]/30 mt-1">{station.genre}</p>
-                      </div>
-                      <span className={`px-4 py-1.5 rounded-full text-[8px] font-bold uppercase tracking-widest ${station.streaming ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'}`}>
-                        {station.streaming ? 'Live' : 'Offline'}
-                      </span>
-                      <div className="flex gap-3">
-                        <button onClick={() => navigate(`/stations`)} className="p-3 rounded-xl bg-white/50 hover:bg-white text-[#515044]/40 hover:text-[#515044] transition-all shadow-sm">
-                          <Eye className="h-4 w-4" />
-                        </button>
-                        <button onClick={() => handleDeleteStation(station.id)} className="p-3 rounded-xl bg-red-500/5 hover:bg-red-500 text-red-500/40 hover:text-white transition-all shadow-sm">
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-12 text-center text-[#515044]/30 font-bold uppercase text-[10px] tracking-[0.2em]">No radio stations found</div>
-                )}
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'media':
-        return <MediaLibrary />;
-
-      case 'radio-hub':
-        return <RadioHub />;
-
-      default:
-        return null;
+    if (activeTab === 'overview') {
+      return (
+        <DashboardOverview
+          eventsCount={events.filter(e => e.category === 'event').length}
+          newsCount={events.filter(e => e.category === 'news').length}
+          jobsCount={events.filter(e => e.category === 'job').length}
+        />
+      );
     }
+
+    // For events, news, and jobs tabs
+    const categoryMap: Record<string, 'event' | 'news' | 'job'> = {
+      'events': 'event',
+      'news': 'news',
+      'jobs': 'job'
+    };
+
+    const currentCategory = categoryMap[activeTab];
+    if (!currentCategory) return null;
+
+    const filteredArticles = events.filter(e => e.category === currentCategory || (currentCategory === 'event' && !e.category));
+    const titleMap = { 'events': 'Web3 Events', 'news': 'Web3 News', 'jobs': 'Job Listings' };
+    const IconMap = { 'events': Calendar, 'news': Newspaper, 'jobs': Briefcase };
+    const ActiveIcon = IconMap[activeTab as keyof typeof IconMap];
+
+    return (
+      <div className="space-y-6">
+        {/* Section Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
+              <ActiveIcon className="h-5 w-5 text-white/60" />
+            </div>
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">{titleMap[activeTab as keyof typeof titleMap]}</h2>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-white/30 mt-0.5">Manage your {activeTab} content</p>
+            </div>
+          </div>
+          <button
+            onClick={() => { setEventToEdit(null); setShowEditor(!showEditor); }}
+            className="bg-white text-[#0a0a0a] font-bold py-3 px-7 rounded-2xl flex items-center justify-center gap-2.5 transition-all hover:bg-white/90 text-[10px] tracking-[0.2em] uppercase w-full sm:w-auto active:scale-95 shadow-2xl shadow-white/10"
+          >
+            <Plus className="h-4 w-4" />
+            {showEditor ? 'Hide Editor' : `Add ${currentCategory}`}
+          </button>
+        </div>
+
+        {showEditor && (
+          <EventEditor
+            onSave={handleSaveComplete}
+            eventToEdit={eventToEdit}
+            onCancel={handleCancelEdit}
+          />
+        )}
+
+        {/* Articles List */}
+        <div className="bg-white/5 backdrop-blur-xl rounded-[32px] overflow-hidden border border-white/10">
+          <div className="px-8 py-6 border-b border-white/5 flex justify-between items-center">
+            <div>
+              <h3 className="font-bold text-white text-base">Published {activeTab}</h3>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-white/30 mt-1">Live on Web3Radio Hub</p>
+            </div>
+            <div className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-bold text-white/40 uppercase tracking-widest">
+              {filteredArticles.length} total
+            </div>
+          </div>
+          <div className="divide-y divide-white/5">
+            {filteredArticles.length > 0 ? (
+              filteredArticles.map((event) => (
+                <div key={event.id} className="flex items-center gap-5 p-6 hover:bg-white/3 transition-all group">
+                  <div className="relative flex-shrink-0">
+                    {event.image_url ? (
+                      <img src={event.image_url} alt={event.title} className="w-16 h-16 object-cover rounded-2xl group-hover:scale-105 transition-transform duration-500 ring-1 ring-white/10" />
+                    ) : (
+                      <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
+                        <Edit className="h-6 w-6 text-white/10" />
+                      </div>
+                    )}
+                    <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#0f0f0f] border border-white/10 flex items-center justify-center">
+                      <ActiveIcon className="h-2.5 w-2.5 text-white/50" />
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-white text-base truncate group-hover:text-white/80 transition-colors">{event.title}</p>
+                    <div className="flex items-center gap-4 mt-1.5">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-white/30 flex items-center gap-1.5">
+                        <Clock className="h-3 w-3" />
+                        {new Date(event.date).toLocaleDateString()}
+                      </p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-white/30 flex items-center gap-1.5 truncate">
+                        <MapPin className="h-3 w-3 flex-shrink-0" />
+                        <span className="truncate">{event.location}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 flex-shrink-0">
+                    <button
+                      onClick={() => handleEditEvent(event)}
+                      className="p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/30 hover:text-white transition-all"
+                      title="Edit"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => navigate(`/events/${event.slug || event.id}`)} className="p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/30 hover:text-white transition-all" title="View">
+                      <Eye className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => handleDeleteEvent(event.id)} className="p-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400/60 hover:text-red-400 transition-all" title="Delete">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="p-20 text-center">
+                <ActiveIcon className="h-14 w-14 mx-auto mb-5 text-white/5" />
+                <h3 className="font-bold uppercase tracking-[0.3em] text-xs text-white/20">No {activeTab} articles yet</h3>
+                <p className="text-[10px] text-white/10 mt-2">Start publishing content to your community</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   // Dashboard
   return (
-    <div className="min-h-screen w-full bg-transparent text-white flex relative overflow-hidden">
+    <div className="min-h-screen w-full bg-[#0a0a0a] text-white flex relative overflow-hidden">
       {/* Sidebar */}
       <CMSSidebar
         onLogout={handleLogout}
@@ -302,15 +284,24 @@ const Dashboard = () => {
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto min-w-0 h-screen">
         {/* Top Bar */}
-        <div className="bg-white/50 backdrop-blur-xl sticky top-0 z-20 border-b border-[#515044]/5 px-6 sm:px-10 py-5 flex justify-between items-center shadow-sm">
-          <div className="flex items-center gap-3 ml-12 lg:ml-0">
-            <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse" />
-            <span className="text-xs font-bold uppercase tracking-widest text-[#515044]">Super Admin</span>
+        <div className="bg-[#0f0f0f]/80 backdrop-blur-xl sticky top-0 z-20 border-b border-white/5 px-6 sm:px-10 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-3 ml-14 lg:ml-0">
+            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">Super Admin</span>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3">
+            {address && (
+              <button
+                onClick={() => open()}
+                className="hidden sm:flex items-center gap-2 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/20 text-violet-300 text-[10px] font-bold uppercase tracking-widest px-4 py-2.5 rounded-xl transition-all"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-violet-400" />
+                {truncate(address)}
+              </button>
+            )}
             <button
               onClick={handleLogout}
-              className="bg-[#515044] hover:bg-black text-white text-[10px] font-bold uppercase tracking-widest px-6 py-3 rounded-xl transition-all shadow-lg shadow-[#515044]/10"
+              className="bg-white/10 hover:bg-red-500/20 border border-white/10 hover:border-red-500/30 text-white/60 hover:text-red-300 text-[10px] font-bold uppercase tracking-widest px-5 py-2.5 rounded-xl transition-all"
             >
               Log Out
             </button>

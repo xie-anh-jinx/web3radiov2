@@ -1,0 +1,10 @@
+/home/kotaromiyabi/kotarominami/web3radioV2/write_nft/target/sbf-solana-solana/release/deps/libthiserror-07ab5e43b9604cfa.rmeta: /home/kotaromiyabi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.69/src/lib.rs /home/kotaromiyabi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.69/src/aserror.rs /home/kotaromiyabi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.69/src/display.rs /home/kotaromiyabi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.69/src/provide.rs
+
+/home/kotaromiyabi/kotarominami/web3radioV2/write_nft/target/sbf-solana-solana/release/deps/libthiserror-07ab5e43b9604cfa.rlib: /home/kotaromiyabi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.69/src/lib.rs /home/kotaromiyabi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.69/src/aserror.rs /home/kotaromiyabi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.69/src/display.rs /home/kotaromiyabi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.69/src/provide.rs
+
+/home/kotaromiyabi/kotarominami/web3radioV2/write_nft/target/sbf-solana-solana/release/deps/thiserror-07ab5e43b9604cfa.d: /home/kotaromiyabi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.69/src/lib.rs /home/kotaromiyabi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.69/src/aserror.rs /home/kotaromiyabi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.69/src/display.rs /home/kotaromiyabi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.69/src/provide.rs
+
+/home/kotaromiyabi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.69/src/lib.rs:
+/home/kotaromiyabi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.69/src/aserror.rs:
+/home/kotaromiyabi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.69/src/display.rs:
+/home/kotaromiyabi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.69/src/provide.rs:

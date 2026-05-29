@@ -160,9 +160,10 @@ const Web3About = () => {
                         </a>
                     </div>
 
-                    <div className="text-right nexus-mono text-[9px] text-white/20">
+                    <div className="text-right nexus-mono text-[9px] text-white/20 space-y-1">
                         <p>BROADCASTING STATUS • ONLINE</p>
                         <p>THE FUTURE OF RADIO IS HERE</p>
+                        <a href="/privacy" className="block hover:text-white/50 transition-colors uppercase">Privacy Policy</a>
                     </div>
                 </div>
 

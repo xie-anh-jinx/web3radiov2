@@ -4,7 +4,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { EffectCoverflow, Pagination, Navigation } from 'swiper/modules';
 import { Play, Pause, SkipBack, SkipForward, Radio } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { fetchStations, subscribeToTable } from '@/lib/supabase';
+import { fetchStations, subscribeToTable } from '@/lib/api';
 import { Station } from '@/types/content';
 import { STATIONS as CENTRAL_STATIONS } from '@/data/stations';
 import { useToast } from '@/components/ui/use-toast';

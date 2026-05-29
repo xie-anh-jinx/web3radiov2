@@ -1,152 +1,227 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Lock, User, Sparkles, ChevronRight, Loader2 } from "lucide-react";
+import { useAppKit, useAppKitAccount, useAppKitNetwork } from '@reown/appkit/react';
+import {
+  Loader2, Sparkles, Wallet, ShieldCheck, ShieldX,
+  ChevronRight, AlertTriangle, LogIn
+} from "lucide-react";
 import logo from '@/assets/web3radio-logo.png';
 
-const PintuMasuk = () => {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
-    const { toast } = useToast();
+// ─── Whitelist ───────────────────────────────────────────────
+const ALLOWED_ADDRESS = '9xhz4Cb4C2Z4z9xdD2geCafovNYVngC4E4XpWtQmeEuv';
 
-    // Check if already logged in
-    useEffect(() => {
-        const auth = localStorage.getItem('cms_auth');
-        if (auth === 'true') {
-            navigate('/dashboard');
-        }
-    }, [navigate]);
-
-    const handleLogin = (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-
-        setTimeout(() => {
-            if (username === 'web3radio' && password === 'web3radio2024') {
-                localStorage.setItem('cms_auth', 'true');
-                toast({
-                    title: "Akses Diberikan",
-                    description: "Selamat datang di Control Panel Web3Radio.",
-                });
-                navigate('/dashboard');
-            } else {
-                toast({
-                    title: "Akses Ditolak",
-                    description: "Username atau Password salah. Silakan coba lagi.",
-                    variant: "destructive",
-                });
-            }
-            setLoading(false);
-        }, 800);
-    };
-
-    return (
-        <div className="min-h-screen w-full bg-transparent relative overflow-hidden text-white flex items-center justify-center p-6">
-
-            {/* Background Decorative Elements */}
-            <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-white/5 rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-white/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-
-            <div className="w-full max-w-md relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-1000">
-                <div className="bg-white/80 backdrop-blur-2xl rounded-[48px] p-12 border border-[#515044]/5 shadow-2xl overflow-hidden group">
-                    {/* Interior Glow */}
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#515044]/10 to-transparent"></div>
-
-                    {/* Header */}
-                    <div className="flex flex-col items-center mb-10 text-center">
-                        <div className="w-20 h-20 mb-8 rounded-3xl overflow-hidden shadow-2xl rotate-3 group-hover:rotate-0 transition-transform duration-500 bg-white">
-                            <img
-                                src={logo}
-                                alt="Web3Radio"
-                                className="w-full h-full object-cover"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Badge className="bg-white/10 text-white/60 border-none px-4 py-1 rounded-full text-[8px] font-bold uppercase tracking-[0.3em] inline-flex items-center gap-2 mb-2">
-                                <Sparkles className="w-2.5 h-2.5" />
-                                Secured Access
-                            </Badge>
-                            <h1 className="text-3xl font-bold tracking-tight">Pintu Masuk</h1>
-                            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/30">Masuk ke Control Panel Web3Radio</p>
-                        </div>
-                    </div>
-
-                    {/* Login Form */}
-                    <form onSubmit={handleLogin} className="space-y-6">
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest opacity-40 ml-1">Username</Label>
-                                <div className="relative group">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#515044]/30">
-                                        <User className="h-4 w-4" />
-                                    </div>
-                                    <Input
-                                        type="text"
-                                        placeholder="Username"
-                                        value={username}
-                                        onChange={(e) => setUsername(e.target.value)}
-                                        className="bg-[#515044]/5 border-none h-14 pl-11 rounded-2xl focus:ring-2 focus:ring-[#515044]/10 focus:bg-white transition-all font-medium text-sm"
-                                        required
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest opacity-40 ml-1">Password</Label>
-                                <div className="relative group">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#515044]/30">
-                                        <Lock className="h-4 w-4" />
-                                    </div>
-                                    <Input
-                                        type="password"
-                                        placeholder="••••••••"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        className="bg-[#515044]/5 border-none h-14 pl-11 rounded-2xl focus:ring-2 focus:ring-[#515044]/10 focus:bg-white transition-all font-medium text-sm"
-                                        required
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <Button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full bg-[#515044] hover:bg-black text-white h-16 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-xl shadow-[#515044]/20 group/btn active:scale-[0.98]"
-                        >
-                            {loading ? (
-                                <Loader2 className="h-5 w-5 animate-spin" />
-                            ) : (
-                                <>
-                                    <span className="uppercase text-xs tracking-widest">Akses Control Panel</span>
-                                    <ChevronRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
-                                </>
-                            )}
-                        </Button>
-                    </form>
-
-                    <div className="mt-12 text-center">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-white/20 leading-relaxed">
-                            Web3Radio CMS v2.0<br />
-                            Authorized personnel only
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-// Internal Badge component if not imported
-const Badge = ({ children, className }: { children: React.ReactNode, className: string }) => (
-    <div className={`inline-flex items-center ${className}`}>
-        {children}
-    </div>
+// ─── Badge helper ────────────────────────────────────────────
+const Badge = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+  <div className={`inline-flex items-center ${className ?? ''}`}>{children}</div>
 );
+
+// ─── Truncate address ────────────────────────────────────────
+const truncate = (addr: string) =>
+  addr ? `${addr.slice(0, 6)}...${addr.slice(-6)}` : '';
+
+// ─── Component ───────────────────────────────────────────────
+const PintuMasuk = () => {
+  const navigate   = useNavigate();
+  const { toast }  = useToast();
+  const { open }   = useAppKit();
+  const { address, isConnected } = useAppKitAccount();
+
+  const [checking,  setChecking]  = useState(false);
+  const [denied,    setDenied]    = useState(false);
+  const [pulse,     setPulse]     = useState(false);
+
+  // ── If already authorised, skip straight to dashboard ──────
+  useEffect(() => {
+    const saved = localStorage.getItem('solana_wallet_auth');
+    if (saved === ALLOWED_ADDRESS) {
+      navigate('/dashboard');
+    }
+  }, [navigate]);
+
+  // ── React when wallet connects / changes ───────────────────
+  useEffect(() => {
+    if (!isConnected || !address) {
+      setDenied(false);
+      return;
+    }
+
+    setChecking(true);
+    setPulse(true);
+
+    // Short animation delay so user sees the checking state
+    const timer = setTimeout(() => {
+      if (address === ALLOWED_ADDRESS) {
+        localStorage.setItem('solana_wallet_auth', address);
+        toast({
+          title: '✅ Akses Diberikan',
+          description: `Wallet ${truncate(address)} diizinkan masuk.`,
+        });
+        navigate('/dashboard');
+      } else {
+        setDenied(true);
+        setChecking(false);
+        setPulse(false);
+        toast({
+          title: '🚫 Akses Ditolak',
+          description: `Address ${truncate(address)} tidak ada dalam whitelist.`,
+          variant: 'destructive',
+        });
+      }
+    }, 1200);
+
+    return () => clearTimeout(timer);
+  }, [isConnected, address, navigate, toast]);
+
+  // ── Status label ───────────────────────────────────────────
+  const statusLabel = () => {
+    if (!isConnected) return { text: 'Wallet tidak terhubung', color: 'text-white/30' };
+    if (checking)     return { text: 'Memverifikasi address…', color: 'text-yellow-400' };
+    if (denied)       return { text: 'Akses ditolak', color: 'text-red-400' };
+    return { text: truncate(address!), color: 'text-green-400' };
+  };
+
+  const { text: statusText, color: statusColor } = statusLabel();
+
+  // ─── Render ─────────────────────────────────────────────────
+  return (
+    <div className="min-h-screen w-full bg-transparent relative overflow-hidden text-white flex items-center justify-center p-6">
+
+      {/* ── Decorative blobs ── */}
+      <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] bg-violet-500/5 rounded-full blur-[80px]" />
+
+      {/* ── Card ── */}
+      <div className="w-full max-w-md relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
+        <div className="bg-white/[0.07] backdrop-blur-2xl rounded-[48px] p-12 border border-white/10 shadow-2xl overflow-hidden group relative">
+
+          {/* Top shimmer line */}
+          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-violet-400/40 to-transparent" />
+          {/* Bottom shimmer line */}
+          <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-purple-400/20 to-transparent" />
+
+          {/* ── Header ── */}
+          <div className="flex flex-col items-center mb-10 text-center">
+            <div
+              className={`w-20 h-20 mb-8 rounded-3xl overflow-hidden shadow-2xl bg-white/10 border border-white/10 transition-all duration-700 ${pulse ? 'ring-4 ring-violet-500/50 scale-110' : 'rotate-3 group-hover:rotate-0'}`}
+            >
+              <img src={logo} alt="Web3Radio" className="w-full h-full object-cover" />
+            </div>
+
+            <Badge className="bg-violet-500/10 text-violet-300 border border-violet-500/20 px-4 py-1 rounded-full text-[8px] font-bold uppercase tracking-[0.3em] inline-flex items-center gap-2 mb-4">
+              <Sparkles className="w-2.5 h-2.5" />
+              Secured Access · Solana
+            </Badge>
+
+            <h1 className="text-3xl font-bold tracking-tight text-white">Pintu Masuk</h1>
+            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/30 mt-2">
+              Hubungkan wallet Solana untuk masuk
+            </p>
+          </div>
+
+          {/* ── Wallet Status Card ── */}
+          <div className={`mb-8 rounded-3xl border p-6 transition-all duration-500 ${
+            denied
+              ? 'bg-red-500/10 border-red-500/20'
+              : isConnected && !checking
+              ? 'bg-green-500/10 border-green-500/20'
+              : checking
+              ? 'bg-yellow-500/10 border-yellow-500/20'
+              : 'bg-white/5 border-white/10'
+          }`}>
+            <div className="flex items-center gap-4">
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${
+                denied
+                  ? 'bg-red-500/20'
+                  : checking
+                  ? 'bg-yellow-500/20'
+                  : isConnected
+                  ? 'bg-green-500/20'
+                  : 'bg-white/5'
+              }`}>
+                {checking ? (
+                  <Loader2 className="w-5 h-5 text-yellow-400 animate-spin" />
+                ) : denied ? (
+                  <ShieldX className="w-5 h-5 text-red-400" />
+                ) : isConnected ? (
+                  <ShieldCheck className="w-5 h-5 text-green-400" />
+                ) : (
+                  <Wallet className="w-5 h-5 text-white/30" />
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-white/30 mb-1">
+                  Status Wallet
+                </p>
+                <p className={`text-sm font-bold truncate ${statusColor}`}>
+                  {statusText}
+                </p>
+              </div>
+            </div>
+
+            {/* Denied warning */}
+            {denied && (
+              <div className="mt-4 flex items-start gap-3 bg-red-500/10 rounded-2xl p-4">
+                <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                <p className="text-[10px] text-red-300 font-medium leading-relaxed">
+                  Address ini tidak termasuk dalam whitelist admin. Gunakan wallet yang terdaftar.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* ── Connect / Change Button ── */}
+          <button
+            id="solana-connect-btn"
+            onClick={() => open()}
+            disabled={checking}
+            className={`w-full h-16 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all duration-300 shadow-xl active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed group/btn
+              ${isConnected && !denied
+                ? 'bg-white/10 hover:bg-white/15 border border-white/10 text-white'
+                : 'bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white shadow-violet-900/30'
+              }`}
+          >
+            {checking ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span className="uppercase text-xs tracking-widest">Memverifikasi…</span>
+              </>
+            ) : isConnected ? (
+              <>
+                <Wallet className="h-4 w-4" />
+                <span className="uppercase text-xs tracking-widest">Ganti Wallet</span>
+                <ChevronRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
+              </>
+            ) : (
+              <>
+                <LogIn className="h-4 w-4" />
+                <span className="uppercase text-xs tracking-widest">Hubungkan Wallet</span>
+                <ChevronRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
+              </>
+            )}
+          </button>
+
+          {/* ── Supported wallets hint ── */}
+          <div className="mt-6 flex items-center justify-center gap-2">
+            <div className="h-px flex-1 bg-white/5" />
+            <p className="text-[9px] font-bold uppercase tracking-widest text-white/20 px-3">
+              Phantom · Solflare · WalletConnect
+            </p>
+            <div className="h-px flex-1 bg-white/5" />
+          </div>
+
+          {/* ── Footer ── */}
+          <div className="mt-8 text-center">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-white/15 leading-relaxed">
+              Web3Radio CMS v2.0<br />
+              Authorized personnel only
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default PintuMasuk;

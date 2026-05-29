@@ -71,12 +71,11 @@ export default function UnifiedTipComponent() {
 
         try {
             const res = await fetch(
-                `https://oiciwwjpfypcivbbwjwa.supabase.co/functions/v1/w3r-api`,
+                `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/rewards/get_price`,
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        action: 'get_price',
                         ids: coinGeckoId,
                         vs_currencies: 'idr'
                     }),

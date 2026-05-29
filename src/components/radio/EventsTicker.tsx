@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchEvents } from '@/lib/supabase';
+import { fetchEvents } from '@/lib/api';
 import { Calendar } from 'lucide-react';
 
 interface EventsTickerProps {

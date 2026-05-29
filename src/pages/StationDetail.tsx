@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import NavBar from '@/components/navigation/NavBar';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Play, Radio, Info, Loader2 } from 'lucide-react';
-import { getStationBySlug } from '@/lib/supabase';
+import { getStationBySlug } from '@/lib/api';
 import { Station } from '@/types/content';
 import { useToast } from '@/components/ui/use-toast';
 import { useAudio } from '@/contexts/AudioProvider';

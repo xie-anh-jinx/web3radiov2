@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import NavBar from '@/components/navigation/NavBar';
-import { getPageBySlug } from '@/lib/supabase';
+import { getPageBySlug } from '@/lib/api';
 import { Loader2, FileText, AlertCircle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Badge } from "@/components/ui/badge";

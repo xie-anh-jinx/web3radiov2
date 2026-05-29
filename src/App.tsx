@@ -20,6 +20,7 @@ import EventDetail from "./pages/EventDetail";
 import StationDetail from "./pages/StationDetail";
 import RentalAccess from "./pages/RentalAccess";
 import PLY from "./pages/PLY";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import { AudioProvider } from "./contexts/AudioProvider";
 import PersistentPlayer from "./components/radio/PersistentPlayer";
 import ExtensionHome from "./pages/ExtensionHome";
@@ -65,6 +66,7 @@ function App() {
                     <Route path="/dao" element={<Web3RadioDAO />} />
                     <Route path="/ply" element={<PLY />} />
                     <Route path="/premium" element={<PremiumContent />} />
+                    <Route path="/privacy" element={<PrivacyPolicy />} />
                     <Route path="/p/:slug" element={<DynamicPage />} />
                   </Routes>
                   <PersistentPlayer />

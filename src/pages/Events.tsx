@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, MapPin, Radio, Users, Briefcase, Newspaper, Sparkles, Map } from 'lucide-react';
-import { fetchEvents, subscribeToTable } from '@/lib/supabase';
+import { fetchEvents, subscribeToTable } from '@/lib/api';
 import { Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Event } from '@/types/content';
@@ -52,7 +52,8 @@ const Events = () => {
   }
 
   // Filter content by category
-  const newsAndJobs = events.filter(e => e.category === 'news' || e.category === 'job');
+  const news = events.filter(e => e.category === 'news');
+  const jobs = events.filter(e => e.category === 'job');
   const web3Events = events.filter(e => e.category === 'event' || !e.category);
 
   const getCategoryIcon = (category?: string) => {
@@ -91,7 +92,7 @@ const Events = () => {
             {event.title}
           </Link>
         </h3>
-        <p className="text-[#515044]/60 text-sm line-clamp-2 mb-8 leading-relaxed font-light">
+        <p className="text-[#515044]/60 text-sm line-clamp-3 mb-8 leading-relaxed font-light">
           {event.description}
         </p>
         <div className="mt-auto grid grid-cols-2 gap-4 pt-6 border-t border-[#515044]/5">
@@ -159,13 +160,19 @@ const Events = () => {
                 className="rounded-2xl px-8 py-4 data-[state=active]:bg-white data-[state=active]:text-black font-bold text-[10px] uppercase tracking-[0.2em] transition-all"
               >
                 <Newspaper className="h-4 w-4 mr-3" />
-                News & Jobs
+                News
+              </TabsTrigger>
+              <TabsTrigger
+                value="jobs"
+                className="rounded-2xl px-8 py-4 data-[state=active]:bg-white data-[state=active]:text-black font-bold text-[10px] uppercase tracking-[0.2em] transition-all"
+              >
+                <Briefcase className="h-4 w-4 mr-3" />
+                Jobs
               </TabsTrigger>
             </TabsList>
           </div>
 
           <TabsContent value="events" className="mt-0 ring-0 focus:outline-none">
-
             {web3Events.length > 0 ? (
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                 {web3Events.map((event) => renderEventCard(event))}
@@ -181,6 +188,20 @@ const Events = () => {
 
           <TabsContent value="news" className="mt-0 ring-0 focus:outline-none">
             <NewspaperLayout />
+          </TabsContent>
+
+          <TabsContent value="jobs" className="mt-0 ring-0 focus:outline-none">
+            {jobs.length > 0 ? (
+              <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                {jobs.map((job) => renderEventCard(job))}
+              </div>
+            ) : (
+              <div className="text-center py-32 bg-white/5 backdrop-blur-xl rounded-[48px] border-2 border-dashed border-white/10">
+                <Briefcase className="h-16 w-16 text-white/10 mx-auto mb-6" />
+                <h3 className="text-2xl font-bold text-white/60 uppercase tracking-widest">No Jobs Found</h3>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-white/20 mt-2">Check back later for new opportunities</p>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </main>

@@ -1,0 +1,14 @@
+/home/kotaromiyabi/kotarominami/web3radioV2/write_nft/target/debug/deps/serde-cda7e8a887f56e10.d: /home/kotaromiyabi/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /home/kotaromiyabi/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /home/kotaromiyabi/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /home/kotaromiyabi/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /home/kotaromiyabi/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /home/kotaromiyabi/kotarominami/web3radioV2/write_nft/target/debug/build/serde-667c050d3ffd4def/out/private.rs
+
+/home/kotaromiyabi/kotarominami/web3radioV2/write_nft/target/debug/deps/libserde-cda7e8a887f56e10.rlib: /home/kotaromiyabi/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /home/kotaromiyabi/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /home/kotaromiyabi/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /home/kotaromiyabi/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /home/kotaromiyabi/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /home/kotaromiyabi/kotarominami/web3radioV2/write_nft/target/debug/build/serde-667c050d3ffd4def/out/private.rs
+
+/home/kotaromiyabi/kotarominami/web3radioV2/write_nft/target/debug/deps/libserde-cda7e8a887f56e10.rmeta: /home/kotaromiyabi/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /home/kotaromiyabi/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /home/kotaromiyabi/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /home/kotaromiyabi/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /home/kotaromiyabi/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /home/kotaromiyabi/kotarominami/web3radioV2/write_nft/target/debug/build/serde-667c050d3ffd4def/out/private.rs
+
+/home/kotaromiyabi/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs:
+/home/kotaromiyabi/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs:
+/home/kotaromiyabi/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs:
+/home/kotaromiyabi/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs:
+/home/kotaromiyabi/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs:
+/home/kotaromiyabi/kotarominami/web3radioV2/write_nft/target/debug/build/serde-667c050d3ffd4def/out/private.rs:
+
+# env-dep:OUT_DIR=/home/kotaromiyabi/kotarominami/web3radioV2/write_nft/target/debug/build/serde-667c050d3ffd4def/out

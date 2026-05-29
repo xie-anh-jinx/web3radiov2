@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import FileUpload from './FileUpload';
 import RichTextEditor from './RichTextEditor';
-import { addStation } from '@/lib/supabase';
+import { addStation } from '@/lib/api';
 
 interface StationEditorProps {
   onSave: () => void;

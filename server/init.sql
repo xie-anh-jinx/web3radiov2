@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS news (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Events table
+-- Events table (Unified for events, news, and jobs)
 CREATE TABLE IF NOT EXISTS events (
   id SERIAL PRIMARY KEY,
   title TEXT NOT NULL,
@@ -30,7 +30,10 @@ CREATE TABLE IF NOT EXISTS events (
   location TEXT NOT NULL,
   description TEXT NOT NULL,
   image_url TEXT,
+  category TEXT DEFAULT 'event',
   slug TEXT UNIQUE,
+  permaweb_url TEXT,
+  nft_mint TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

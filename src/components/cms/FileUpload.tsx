@@ -2,9 +2,8 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, X, Image, Loader2 } from "lucide-react";
+import { Upload, X, Image, Loader2, Sparkles } from "lucide-react";
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -51,13 +50,12 @@ const FileUpload: React.FC<FileUploadProps> = ({
         throw new Error(result.error || 'Upload failed');
       }
 
-      // Construct full URL for the uploaded file
       const fullUrl = `${API_URL}${result.data.url}`;
       onFileUploaded(fullUrl);
 
       toast({
-        title: "File uploaded successfully",
-        description: "Your image has been uploaded and is ready to use.",
+        title: "Success",
+        description: "Image uploaded successfully.",
       });
     } catch (error: any) {
       toast({
@@ -102,44 +100,44 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
   return (
     <div className="space-y-4">
-      <Label className="text-white flex items-center gap-2">
-        <Image className="h-4 w-4" />
-        Featured Image
-      </Label>
-
       {currentImageUrl ? (
-        <div className="relative group">
+        <div className="relative group rounded-2xl overflow-hidden border border-white/10 aspect-video bg-[#0a0a0a]">
           <img
             src={currentImageUrl}
             alt="Preview"
-            className="w-full h-48 object-cover rounded-lg border-2 border-green-500/50"
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           />
-          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg">
+          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3 backdrop-blur-[2px]">
             <Button
               variant="destructive"
               size="sm"
               onClick={removeImage}
-              className="flex items-center gap-2"
+              className="bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/30 rounded-xl px-6"
             >
-              <X className="h-4 w-4" />
+              <X className="h-4 w-4 mr-2" />
               Remove Image
             </Button>
           </div>
-          <div className="absolute bottom-2 left-2 bg-green-600 text-white text-xs px-2 py-1 rounded">
-            Featured Image Set
+          <div className="absolute top-4 left-4">
+            <div className="bg-white/10 backdrop-blur-md border border-white/20 text-white text-[8px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.5)]" />
+              Active Image
+            </div>
           </div>
         </div>
       ) : (
         <div
-          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all duration-200 ${dragOver
-              ? 'border-green-400 bg-green-500/20 scale-[1.02]'
-              : 'border-gray-600 hover:border-green-500 hover:bg-gray-700/50'
+          className={`relative border-2 border-dashed rounded-[28px] h-48 flex flex-col items-center justify-center cursor-pointer transition-all duration-500 group overflow-hidden ${dragOver
+              ? 'border-white/40 bg-white/10'
+              : 'border-white/5 hover:border-white/20 bg-white/[0.02] hover:bg-white/[0.05]'
             }`}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onClick={() => document.getElementById('file-input')?.click()}
         >
+          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
+          
           <Input
             id="file-input"
             type="file"
@@ -149,23 +147,26 @@ const FileUpload: React.FC<FileUploadProps> = ({
             disabled={uploading}
           />
 
-          <div className="flex flex-col items-center space-y-3">
+          <div className="relative z-10 flex flex-col items-center text-center px-6">
             {uploading ? (
               <>
-                <Loader2 className="h-10 w-10 text-green-500 animate-spin" />
-                <p className="text-green-400 font-medium">Uploading...</p>
+                <div className="relative">
+                  <div className="absolute inset-0 blur-xl bg-white/20 rounded-full animate-pulse" />
+                  <Loader2 className="h-10 w-10 text-white animate-spin relative" />
+                </div>
+                <p className="text-white/70 font-bold uppercase tracking-[0.2em] text-[10px] mt-4">Uploading...</p>
               </>
             ) : (
               <>
-                <div className="p-3 bg-gray-700 rounded-full">
-                  <Upload className="h-8 w-8 text-green-400" />
+                <div className="mb-4 p-4 rounded-2xl bg-white/5 border border-white/5 group-hover:scale-110 group-hover:bg-white/10 transition-all duration-500">
+                  <Upload className="h-6 w-6 text-white/40 group-hover:text-white transition-colors" />
                 </div>
                 <div>
-                  <p className="text-white font-medium">
-                    Click to upload or drag and drop
+                  <p className="text-white/80 font-bold uppercase tracking-[0.1em] text-xs">
+                    Drop your image here
                   </p>
-                  <p className="text-sm text-gray-400 mt-1">
-                    PNG, JPG, GIF, WebP up to {maxSize}MB
+                  <p className="text-[10px] font-medium text-white/20 mt-2 uppercase tracking-widest">
+                    PNG, JPG, WebP up to {maxSize}MB
                   </p>
                 </div>
               </>
@@ -178,4 +179,3 @@ const FileUpload: React.FC<FileUploadProps> = ({
 };
 
 export default FileUpload;
-
