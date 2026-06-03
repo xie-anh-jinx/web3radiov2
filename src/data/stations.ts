@@ -39,7 +39,7 @@ export const STATIONS: Station[] = [
         streamUrl: 'https://s1.cloudmu.id/listen/delta_fm/radio.mp3',
         genre: 'pop',
         description: 'Rock & Alternative Music',
-        image_url: "https://deltafm.net/img/coverArt.png"
+        image_url: "https://images.noiceid.cc/catalog/content-1692789803987"
     },
     {
         id: 'prambors',
@@ -47,7 +47,7 @@ export const STATIONS: Station[] = [
         streamUrl: 'https://stream.rcs.revma.com/h77wwp48kxcwv',
         genre: 'pop',
         description: "Jakarta's #1 Hit Music Station",
-        image_url: "https://www.pramborsfm.com/img/coverArt.jpg"
+        image_url: "https://pramborsmks.com/assets/nocoverArt.jpg"
     },
     {
         id: 'ebsfm',
