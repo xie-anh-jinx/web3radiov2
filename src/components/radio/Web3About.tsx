@@ -151,6 +151,41 @@ const Web3About = () => {
                     </div>
                 </div>
 
+                {/* App Download Section */}
+                <div className="bg-white/5 border border-white/10 p-8 md:p-12 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-8">
+                    <div className="space-y-2">
+                        <p className="nexus-mono text-[10px] text-white/30 font-bold tracking-[0.3em]">+ MOBILE</p>
+                        <h3 className="nexus-heading text-2xl text-white">Take the frequency with you.</h3>
+                        <p className="text-white/50 text-sm">Download the Web3Radio app for iOS and Android.</p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-4">
+                        <a 
+                            href="https://play.google.com/store/apps/details?id=xyz.webthreeradio.app" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="transition-transform hover:scale-105 active:scale-95"
+                        >
+                            <img 
+                                src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" 
+                                alt="Get it on Google Play" 
+                                className="h-12 md:h-14 w-auto"
+                            />
+                        </a>
+                        <a 
+                            href="https://apps.apple.com/app/web3radio" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="transition-transform hover:scale-105 active:scale-95"
+                        >
+                            <img 
+                                src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" 
+                                alt="Download on the App Store" 
+                                className="h-12 md:h-14 w-auto px-1"
+                            />
+                        </a>
+                    </div>
+                </div>
+
                 {/* Footer info */}
                 <div className="pt-24 flex flex-col md:flex-row justify-between items-end gap-12 border-t border-white/5 pb-12">
                     <div className="space-y-4">
