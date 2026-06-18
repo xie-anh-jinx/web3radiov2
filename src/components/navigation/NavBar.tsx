@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAppKit, useAppKitAccount, useAppKitNetwork } from '@reown/appkit/react';
+import { useNear } from '@/contexts/NearContext';
 import { useDisconnect } from 'wagmi';
 import { Home, Calendar, Radio, Menu, X, Users, Gift, Smartphone, Lock as LockIcon } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -15,12 +16,18 @@ const NavBar = () => {
   const animRef = useRef<number | null>(null);
   const [currentActiveItem, setCurrentActiveItem] = useState<HTMLAnchorElement | null>(null);
 
-  // Unified AppKit State
+  // Unified Multi-chain State
   const { open: openAppKit } = useAppKit();
   const { address, isConnected } = useAppKitAccount();
   const { caipNetwork } = useAppKitNetwork();
-  const { disconnect } = useDisconnect();
-  const networkName = caipNetwork?.name || 'Unknown';
+  const { disconnect: disconnectEVM } = useDisconnect();
+  
+  // Near State
+  const { accountId, isConnected: isNearConnected, connect: connectNear, disconnect: disconnectNear } = useNear();
+  const isConnectedAny = isConnected || isNearConnected;
+  
+  const networkName = isNearConnected ? 'NEAR' : (caipNetwork?.name || 'Unknown');
+  const displayAddress = address || accountId;
 
   const isAndroid = Capacitor.getPlatform() === 'android';
 
@@ -34,11 +41,6 @@ const NavBar = () => {
       { to: 'https://app.webthreeradio.xyz/', label: 'App', icon: Radio, external: true },
     ]),
   ].filter(link => {
-    // Show only Home on Android as per instructions to disable PLY, staking (DAO), rewards
-    // Keeping events/rental if those are not part of requested disables, 
-    // but user said "PLY", "staking", "reward claiming".
-    // "staking" and "rewards" are in DAO/PLY.
-    // I will show Home, Events, Rental (if those are okay), but hide PLY and DAO.
     if (isAndroid) {
       return !['/ply', '/dao'].includes(link.to);
     }
@@ -105,7 +107,6 @@ const NavBar = () => {
     }
   };
 
-  // Sync animation with router location
   useEffect(() => {
     const links = navRef.current?.querySelectorAll('a');
     if (links) {
@@ -126,7 +127,6 @@ const NavBar = () => {
 
   return (
     <header className="fixed top-0 w-full z-[100] px-4">
-      {/* CSS Styles */}
       <style>{`
         .nav-container {
           position: fixed;
@@ -232,12 +232,10 @@ const NavBar = () => {
       `}</style>
 
       <nav className="nav-container">
-        {/* Logo */}
         <Link to="/" className="flex items-center ml-3 nav-desktop-only hover:scale-105 transition-transform">
           <img src={logo} alt="Web3Radio" className="w-8 h-8 rounded-lg" />
         </Link>
 
-        {/* Links */}
         <ul ref={navRef} className="nav-list" onMouseLeave={handleMouseLeaveNav}>
           {navLinks.map((link) => (
             <li key={link.to}>
@@ -265,27 +263,34 @@ const NavBar = () => {
         </ul>
 
         {/* Wallet Connection */}
-        <div className="mr-2 nav-desktop-only">
-          {!isConnected ? (
-            <button
-              onClick={() => openAppKit()}
-              className="px-4 py-2 bg-white text-black rounded-xl font-bold text-[9px] uppercase tracking-wider shadow-sm hover:bg-gray-200 transition-all flex items-center gap-2"
-            >
-              <div className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
-              Connect
-            </button>
+        <div className="mr-2 nav-desktop-only flex items-center gap-2">
+          {!isConnectedAny ? (
+            <>
+              <button
+                onClick={() => openAppKit()}
+                className="px-3 py-2 bg-gradient-to-r from-violet-600/80 to-indigo-600/80 text-white rounded-xl font-bold text-[8px] uppercase tracking-wider shadow-sm hover:from-violet-500 hover:to-indigo-500 transition-all flex items-center gap-1.5"
+              >
+                Solana/EVM
+              </button>
+              <button
+                onClick={() => connectNear()}
+                className="px-3 py-2 bg-gradient-to-r from-cyan-600/80 to-blue-600/80 text-white rounded-xl font-bold text-[8px] uppercase tracking-wider shadow-sm hover:from-cyan-500 hover:to-blue-500 transition-all flex items-center gap-1.5"
+              >
+                Near
+              </button>
+            </>
           ) : (
             <button
-              onClick={() => openAppKit({ view: 'Account' })}
-              className="px-3 py-2 bg-white/10 border border-white/20 text-white rounded-xl font-mono text-[9px] shadow-sm hover:bg-white/20 transition-all flex items-center gap-1.5"
+              onClick={() => isNearConnected ? disconnectNear() : openAppKit({ view: 'Account' })}
+              className="px-3 py-2 bg-white/10 border border-white/20 text-white rounded-xl font-mono text-[9px] shadow-sm hover:bg-white/20 transition-all flex items-center gap-1.5 group"
             >
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              {address?.slice(0, 4)}...{address?.slice(-4)}
+              <div className={cn("w-1.5 h-1.5 rounded-full", isNearConnected ? "bg-cyan-400" : "bg-emerald-500")} />
+              <span>{displayAddress?.slice(0, 4)}...{displayAddress?.slice(-4)}</span>
+              <span className="text-[7px] opacity-0 group-hover:opacity-60 transition-opacity ml-1">Disconnect</span>
             </button>
           )}
         </div>
 
-        {/* Mobile Toggle */}
         <button
           className="md:hidden w-10 h-10 flex items-center justify-center rounded-xl hover:bg-black/5"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -294,19 +299,7 @@ const NavBar = () => {
         </button>
       </nav>
 
-      {/* SVG Filter */}
-      <svg className="hidden">
-        <defs>
-          <filter id="wave-distort" x="0%" y="0%" width="100%" height="100%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.0038 0.0038" numOctaves="1" seed="2" result="roughNoise" />
-            <feGaussianBlur in="roughNoise" stdDeviation="8.5" result="softNoise" />
-            <feComposite operator="arithmetic" k1="0" k2="1" k3="2" k4="0" in="softNoise" result="mergedMap" />
-            <feDisplacementMap in="SourceGraphic" in2="mergedMap" scale="-42" xChannelSelector="G" yChannelSelector="G" />
-          </filter>
-        </defs>
-      </svg>
-
-      {/* UI for Mobile Dropdown */}
+      {/* Mobile Dropdown */}
       {mobileMenuOpen && (
         <div className="md:hidden mt-16 mx-auto w-[92vw] glass border border-white/30 rounded-3xl overflow-hidden shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300">
           <div className="p-5 flex flex-col gap-3">
@@ -339,36 +332,55 @@ const NavBar = () => {
               )
             ))}
             <div className="h-px bg-white/10 my-1" />
-            {!isConnected ? (
-              <button
-                onClick={() => openAppKit()}
-                className="w-full py-4 bg-white text-black rounded-2xl font-bold uppercase tracking-widest text-[11px] shadow-sm"
-              >
-                Connect Wallet
-              </button>
+            {!isConnectedAny ? (
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() => { openAppKit(); setMobileMenuOpen(false); }}
+                  className="w-full py-4 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-2xl font-bold uppercase tracking-widest text-[11px] shadow-sm active:scale-95 transition-transform"
+                >
+                  Connect Solana/EVM
+                </button>
+                <button
+                  onClick={() => { connectNear(); setMobileMenuOpen(false); }}
+                  className="w-full py-4 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-2xl font-bold uppercase tracking-widest text-[11px] shadow-sm active:scale-95 transition-transform"
+                >
+                  Connect Near
+                </button>
+              </div>
             ) : (
               <div className="flex flex-col gap-2">
                 <button
-                  onClick={() => { openAppKit({ view: 'Account' }); setMobileMenuOpen(false); }}
+                  onClick={() => { isNearConnected ? null : openAppKit({ view: 'Account' }); setMobileMenuOpen(false); }}
                   className="w-full px-5 py-4 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-between"
                 >
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                    <div className={cn("w-2 h-2 rounded-full", isNearConnected ? "bg-cyan-400" : "bg-emerald-500")} />
                     <span className="text-[10px] font-bold uppercase tracking-widest text-white/50">{networkName}</span>
                   </div>
-                  <span className="text-[11px] font-mono font-bold text-white">{address?.slice(0, 8)}...{address?.slice(-4)}</span>
+                  <span className="text-[11px] font-mono font-bold text-white">{displayAddress?.slice(0, 8)}...{displayAddress?.slice(-4)}</span>
                 </button>
                 <button
-                  onClick={() => { disconnect(); setMobileMenuOpen(false); }}
+                  onClick={() => { isNearConnected ? disconnectNear() : disconnectEVM(); setMobileMenuOpen(false); }}
                   className="w-full py-2 text-[10px] font-bold text-red-400 hover:text-red-500 uppercase tracking-widest transition-colors"
                 >
-                  Disconnect
+                  Disconnect Wallet
                 </button>
               </div>
             )}
           </div>
         </div>
       )}
+
+      <svg className="hidden">
+        <defs>
+          <filter id="wave-distort" x="0%" y="0%" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.0038 0.0038" numOctaves="1" seed="2" result="roughNoise" />
+            <feGaussianBlur in="roughNoise" stdDeviation="8.5" result="softNoise" />
+            <feComposite operator="arithmetic" k1="0" k2="1" k3="2" k4="0" in="softNoise" result="mergedMap" />
+            <feDisplacementMap in="SourceGraphic" in2="mergedMap" scale="-42" xChannelSelector="G" yChannelSelector="G" />
+          </filter>
+        </defs>
+      </svg>
     </header>
   );
 };

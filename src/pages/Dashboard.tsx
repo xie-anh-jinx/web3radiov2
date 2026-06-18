@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
 import { useAppKit, useAppKitAccount } from '@reown/appkit/react';
+import { useNear } from '@/contexts/NearContext';
 import { Loader2, Eye, Trash2, Plus, Edit, Wallet, Clock, AlertTriangle, Sparkles, ShieldCheck, Newspaper, Briefcase, Calendar, MapPin } from "lucide-react";
 import { fetchEvents, deleteEvent, subscribeToTable } from '@/lib/api';
 import EventEditor from '@/components/cms/EventEditor';
@@ -9,7 +10,12 @@ import CMSSidebar from '@/components/cms/CMSSidebar';
 import DashboardOverview from '@/components/cms/DashboardOverview';
 import logo from '@/assets/web3radio-logo.png';
 
-const ALLOWED_ADDRESS = '9xhz4Cb4C2Z4z9xdD2geCafovNYVngC4E4XpWtQmeEuv';
+const ALLOWED_ADDRESSES = [
+  '9xhz4Cb4C2Z4z9xdD2geCafovNYVngC4E4XpWtQmeEuv', // Solana
+  '0x242DfB7849544eE242b2265cA7E585bdec60456B', // EVM Admin
+  'kotarominami.near', // Near
+];
+const isAllowed = (addr: string) => ALLOWED_ADDRESSES.map(a => a.toLowerCase()).includes(addr.toLowerCase());
 const truncate = (addr: string) => addr ? `${addr.slice(0, 6)}...${addr.slice(-6)}` : '';
 
 // Type definitions
@@ -34,6 +40,7 @@ const Dashboard = () => {
   const { toast } = useToast();
   const { open } = useAppKit();
   const { address, isConnected } = useAppKitAccount();
+  const { accountId, isConnected: isNearConnected } = useNear() as any;
 
   // Data states
   const [events, setEvents] = useState<Event[]>([]);
@@ -42,19 +49,24 @@ const Dashboard = () => {
 
   // Check authentication: wallet address must match whitelist
   useEffect(() => {
-    const saved = localStorage.getItem('solana_wallet_auth');
-    if (saved !== ALLOWED_ADDRESS) {
+    const saved = localStorage.getItem('web3radio_wallet_auth');
+
+    if (!saved || !isAllowed(saved)) {
       navigate('/pintu_masuk');
       return;
     }
-    // Also verify the currently-connected wallet still matches
-    if (isConnected && address && address !== ALLOWED_ADDRESS) {
-      localStorage.removeItem('solana_wallet_auth');
+
+    // Also verify the currently-connected wallet still matches if connected
+    const effectiveAddress = address || accountId;
+    const effectiveConnected = isConnected || isNearConnected;
+
+    if (effectiveConnected && effectiveAddress && !isAllowed(effectiveAddress)) {
+      localStorage.removeItem('web3radio_wallet_auth');
       navigate('/pintu_masuk');
       return;
     }
     setIsAuthenticated(true);
-  }, [navigate, isConnected, address]);
+  }, [navigate, isConnected, isNearConnected, address, accountId]);
 
   // Load data when authenticated
   useEffect(() => {
@@ -89,7 +101,7 @@ const Dashboard = () => {
   }, [isAuthenticated, toast]);
 
   const handleLogout = () => {
-    localStorage.removeItem('solana_wallet_auth');
+    localStorage.removeItem('web3radio_wallet_auth');
     navigate('/pintu_masuk');
     toast({
       title: "Logged Out",
@@ -290,13 +302,13 @@ const Dashboard = () => {
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">Super Admin</span>
           </div>
           <div className="flex items-center gap-3">
-            {address && (
+            {(address || accountId) && (
               <button
-                onClick={() => open()}
+                onClick={() => isNearConnected ? null : open()}
                 className="hidden sm:flex items-center gap-2 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/20 text-violet-300 text-[10px] font-bold uppercase tracking-widest px-4 py-2.5 rounded-xl transition-all"
               >
                 <ShieldCheck className="w-3.5 h-3.5 text-violet-400" />
-                {truncate(address)}
+                {truncate((address || accountId)!)}
               </button>
             )}
             <button

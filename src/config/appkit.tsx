@@ -22,6 +22,8 @@ const alchemyKey = import.meta.env.VITE_ALCHEMY_KEY
 const solanaRpc =
   import.meta.env.VITE_SOLANA_RPC || 'https://rpc.ankr.com/solana'
 
+  import.meta.env.VITE_SOLANA_RPC || 'https://rpc.ankr.com/solana'
+
 // ---- EVM ----
 const wagmiAdapter = new WagmiAdapter({
   projectId,

@@ -22,6 +22,7 @@ import RentalAccess from "./pages/RentalAccess";
 import PLY from "./pages/PLY";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import { AudioProvider } from "./contexts/AudioProvider";
+import { NearContextProvider } from "./contexts/NearContext";
 import PersistentPlayer from "./components/radio/PersistentPlayer";
 import ExtensionHome from "./pages/ExtensionHome";
 import { useCapacitorLifecycle } from "./hooks/useCapacitorLifecycle";
@@ -42,6 +43,7 @@ function App() {
         <W3RTokenProvider>
           <XMTPProvider>
             <AudioProvider>
+              <NearContextProvider>
               <CapacitorLifecycleManager />
               <div className="premium-bg-full" />
               {import.meta.env.MODE === 'extension' ? (
@@ -73,6 +75,7 @@ function App() {
                   <Toaster />
                 </BrowserRouter>
               )}
+              </NearContextProvider>
             </AudioProvider>
           </XMTPProvider>
         </W3RTokenProvider>
