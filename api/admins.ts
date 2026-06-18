@@ -7,7 +7,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
     if (req.method === 'OPTIONS') {
@@ -16,40 +16,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     try {
         if (req.method === 'GET') {
-            const { slug } = req.query;
-            if (slug) {
+            const { address } = req.query;
+            
+            if (address) {
                 const { data, error } = await supabase
-                    .from('news')
+                    .from('admins')
                     .select('*')
-                    .eq('slug', slug)
-                    .single();
+                    .eq('address', address)
+                    .maybeSingle();
+                
                 if (error) throw error;
-                return res.status(200).json({ data, error: null });
+                return res.status(200).json({ data, is_admin: !!data });
             }
 
             const { data, error } = await supabase
-                .from('news')
-                .select('*')
-                .order('created_at', { ascending: false });
-            if (error) throw error;
-            return res.status(200).json({ data, error: null });
-        }
-
-        if (req.method === 'POST') {
-            const { title, content, date, image_url, slug } = req.body;
-            const finalSlug = slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-
-            const { data, error } = await supabase
-                .from('news')
-                .insert([{ 
-                    title, 
-                    content, 
-                    date: date || new Date().toISOString(), 
-                    image_url, 
-                    slug: finalSlug 
-                }])
-                .select()
-                .single();
+                .from('admins')
+                .select('address, chain_type, role')
+                .order('created_at', { ascending: true });
             
             if (error) throw error;
             return res.status(200).json({ data, error: null });

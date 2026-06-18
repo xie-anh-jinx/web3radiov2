@@ -52,8 +52,8 @@ const STATION_ARTWORK: Record<string, string> = {
     'ozradio': 'https://images.glints.com/unsafe/glints-dashboard.oss-ap-southeast-1.aliyuncs.com/company-logo/8f0d3c7d79eee4cbc80351517c75d938.png',
     'iradio': 'https://pbs.twimg.com/profile_images/1478253252506554368/KY8bV8Xq_400x400.jpg',
     'female': 'https://femalecircle.id/img/coverArt.png',
-    'delta': 'https://pbs.twimg.com/profile_images/1397855976538632195/cNdKclCQ_400x400.jpg',
-    'prambors': 'https://pbs.twimg.com/profile_images/1587680139067346944/gqtFkz6a_400x400.jpg',
+    'delta': 'https://images.noiceid.cc/catalog/content-1692789803987',
+    'prambors': 'https://pramborsmks.com/assets/nocoverArt.jpg',
     'ebsfm': 'https://www.ebsfmunhas.com/wp-content/uploads/2018/04/1.-EBS-LOGO-MUBES-PNG-WEB-300x255.png'
 };
 

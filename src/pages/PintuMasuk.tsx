@@ -3,29 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
 import { useAppKit, useAppKitAccount, useAppKitNetwork } from '@reown/appkit/react';
 import { useNear } from '@/contexts/NearContext';
+import { checkAdminStatus, truncateAddress as truncate } from '@/lib/auth';
 import {
   Loader2, Sparkles, Wallet, ShieldCheck, ShieldX,
   ChevronRight, AlertTriangle, LogIn
 } from "lucide-react";
 import logo from '@/assets/web3radio-logo.png';
 
-// ─── Whitelist ───────────────────────────────────────────────
-const ALLOWED_ADDRESSES = [
-  '9xhz4Cb4C2Z4z9xdD2geCafovNYVngC4E4XpWtQmeEuv', // Solana
-  '0x242DfB7849544eE242b2265cA7E585bdec60456B', // EVM Admin
-  'kotarominami.near', // Near
-];
-
-const isAllowed = (addr: string) => ALLOWED_ADDRESSES.map(a => a.toLowerCase()).includes(addr.toLowerCase());
-
 // ─── Badge helper ────────────────────────────────────────────
 const Badge = ({ children, className }: { children: React.ReactNode; className?: string }) => (
   <div className={`inline-flex items-center ${className ?? ''}`}>{children}</div>
 );
-
-// ─── Truncate address ────────────────────────────────────────
-const truncate = (addr: string) =>
-  addr ? `${addr.slice(0, 6)}...${addr.slice(-6)}` : '';
 
 // ─── Component ───────────────────────────────────────────────
 const PintuMasuk = () => {
@@ -41,10 +29,18 @@ const PintuMasuk = () => {
 
   // ── If already authorised, skip straight to dashboard ──────
   useEffect(() => {
-    const saved = localStorage.getItem('web3radio_wallet_auth');
-    if (saved && isAllowed(saved)) {
-      navigate('/dashboard');
-    }
+    const checkSavedSession = async () => {
+      const saved = localStorage.getItem('web3radio_wallet_auth');
+      if (saved) {
+        const allowed = await checkAdminStatus(saved);
+        if (allowed) {
+          navigate('/dashboard');
+        } else {
+          localStorage.removeItem('web3radio_wallet_auth');
+        }
+      }
+    };
+    checkSavedSession();
   }, [navigate]);
 
   // ── React when wallet connects / changes ───────────────────
@@ -60,8 +56,10 @@ const PintuMasuk = () => {
     setChecking(true);
     setPulse(true);
 
-    const timer = setTimeout(() => {
-      if (isAllowed(effectiveAddress)) {
+    const verify = async () => {
+      const allowed = await checkAdminStatus(effectiveAddress);
+      
+      if (allowed) {
         localStorage.setItem('web3radio_wallet_auth', effectiveAddress);
         toast({
           title: '✅ Akses Diberikan',
@@ -78,9 +76,11 @@ const PintuMasuk = () => {
           variant: 'destructive',
         });
       }
-    }, 1200);
+    };
 
-    return () => clearTimeout(timer);
+    verify();
+
+    return () => {};
   }, [isConnected, isNearConnected, address, accountId, navigate, toast]);
 
   // ── Status label ───────────────────────────────────────────

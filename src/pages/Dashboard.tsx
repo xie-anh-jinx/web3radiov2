@@ -9,14 +9,8 @@ import EventEditor from '@/components/cms/EventEditor';
 import CMSSidebar from '@/components/cms/CMSSidebar';
 import DashboardOverview from '@/components/cms/DashboardOverview';
 import logo from '@/assets/web3radio-logo.png';
+import { checkAdminStatus, truncateAddress as truncate } from '@/lib/auth';
 
-const ALLOWED_ADDRESSES = [
-  '9xhz4Cb4C2Z4z9xdD2geCafovNYVngC4E4XpWtQmeEuv', // Solana
-  '0x242DfB7849544eE242b2265cA7E585bdec60456B', // EVM Admin
-  'kotarominami.near', // Near
-];
-const isAllowed = (addr: string) => ALLOWED_ADDRESSES.map(a => a.toLowerCase()).includes(addr.toLowerCase());
-const truncate = (addr: string) => addr ? `${addr.slice(0, 6)}...${addr.slice(-6)}` : '';
 
 // Type definitions
 type Event = {
@@ -49,23 +43,37 @@ const Dashboard = () => {
 
   // Check authentication: wallet address must match whitelist
   useEffect(() => {
-    const saved = localStorage.getItem('web3radio_wallet_auth');
+    const verifyAccess = async () => {
+      const saved = localStorage.getItem('web3radio_wallet_auth');
 
-    if (!saved || !isAllowed(saved)) {
-      navigate('/pintu_masuk');
-      return;
-    }
+      if (!saved) {
+        navigate('/pintu_masuk');
+        return;
+      }
 
-    // Also verify the currently-connected wallet still matches if connected
-    const effectiveAddress = address || accountId;
-    const effectiveConnected = isConnected || isNearConnected;
+      const allowed = await checkAdminStatus(saved);
+      if (!allowed) {
+        localStorage.removeItem('web3radio_wallet_auth');
+        navigate('/pintu_masuk');
+        return;
+      }
 
-    if (effectiveConnected && effectiveAddress && !isAllowed(effectiveAddress)) {
-      localStorage.removeItem('web3radio_wallet_auth');
-      navigate('/pintu_masuk');
-      return;
-    }
-    setIsAuthenticated(true);
+      // Also verify the currently-connected wallet still matches if connected
+      const effectiveAddress = address || accountId;
+      const effectiveConnected = isConnected || isNearConnected;
+
+      if (effectiveConnected && effectiveAddress) {
+        const currentAllowed = await checkAdminStatus(effectiveAddress);
+        if (!currentAllowed) {
+            localStorage.removeItem('web3radio_wallet_auth');
+            navigate('/pintu_masuk');
+            return;
+        }
+      }
+      setIsAuthenticated(true);
+    };
+
+    verifyAccess();
   }, [navigate, isConnected, isNearConnected, address, accountId]);
 
   // Load data when authenticated

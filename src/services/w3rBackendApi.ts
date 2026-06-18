@@ -1,6 +1,6 @@
 
 // Backend API service for W3R rewards - Migrated to Express API + PostgreSQL
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
 
 export interface ListeningSession {
   userAddress: string;

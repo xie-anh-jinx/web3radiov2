@@ -7,7 +7,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
     if (req.method === 'OPTIONS') {
@@ -36,19 +36,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         if (req.method === 'POST') {
-            title,
-                date,
-                location,
-                description,
-                imageUrl: image_url || null,
-                    slug: finalSlug
+            const { title, date, location, description, image_url, slug, category } = req.body;
+            const finalSlug = slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            
+            const { data, error } = await supabase
+                .from('events')
+                .insert([{ 
+                    title, 
+                    date, 
+                    location, 
+                    description, 
+                    image_url, 
+                    slug: finalSlug, 
+                    category: category || 'event' 
+                }])
+                .select()
+                .single();
+            
+            if (error) throw error;
+            return res.status(200).json({ data, error: null });
         }
-    });
-    return res.status(200).json({ data: event, error: null });
-}
 
-return res.status(405).json({ error: 'Method not allowed' });
+        return res.status(405).json({ error: 'Method not allowed' });
     } catch (error: any) {
-    return res.status(500).json({ data: null, error: error.message });
-}
+        return res.status(500).json({ data: null, error: error.message });
+    }
 }

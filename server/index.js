@@ -10,6 +10,7 @@ const rentalRoutes = require('./routes/rentals'); // Added rentalRoutes import
 const uploadRoutes = require('./routes/upload');
 const streamMetadataRoutes = require('./routes/stream-metadata');
 const rewardsRoutes = require('./routes/rewards');
+const adminsRoutes = require('./routes/admins');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -37,6 +38,7 @@ app.use('/api/rentals', rentalRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/stream-metadata', streamMetadataRoutes);
 app.use('/api/rewards', rewardsRoutes);
+app.use('/api/admins', adminsRoutes);
 
 // Error handler
 app.use((err, req, res, next) => {

@@ -21,6 +21,18 @@
             "destination": "/api/stations"
         },
         {
+            "source": "/api/admins",
+            "destination": "/api/admins"
+        },
+        {
+            "source": "/api/rewards/:action/:address",
+            "destination": "/api/rewards?action=:action&address=:address"
+        },
+        {
+            "source": "/api/rewards/:action",
+            "destination": "/api/rewards?action=:action"
+        },
+        {
             "source": "/((?!api/).*)",
             "destination": "/index.html"
         }
